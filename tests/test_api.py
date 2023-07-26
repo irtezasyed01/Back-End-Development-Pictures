@@ -44,9 +44,16 @@ def test_pictures_json_is_not_empty(client):
     assert len(res.json) > 0
 
 
-def test_post_picture(picture, client):
-    # create a brand new picture to upload
-    res = client.post("/picture", data=json.dumps(picture),
+def test_post_picture(client):
+    picture = {
+        'id': 200,
+        'pic_url': 'http://dummyimage.com/230x100.png/dddddd/000000',
+        'event_country': 'United States',
+        'event_state': 'California',
+        'event_city': 'Fremont',
+        'event_date': '11/2/2030'
+    }
+    res = client.post("/picture/200", data=json.dumps(picture),
                       content_type="application/json")
     assert res.status_code == 201
     assert res.json['id'] == picture['id']
@@ -54,24 +61,31 @@ def test_post_picture(picture, client):
     assert res.status_code == 200
     assert res.json['length'] == 11
 
-def test_post_picture_duplicate(picture, client):
-    # create a brand new picture to upload
-    res = client.post("/picture", data=json.dumps(picture),
+def test_post_picture_duplicate(client):
+    picture = {
+        'id': 200,
+        'pic_url': 'http://dummyimage.com/230x100.png/dddddd/000000',
+        'event_country': 'United States',
+        'event_state': 'California',
+        'event_city': 'Fremont',
+        'event_date': '11/2/2030'
+    }
+    res = client.post("/picture/200", data=json.dumps(picture),
                       content_type="application/json")
     assert res.status_code == 302
-    assert res.json['Message'] == f"picture with id {picture['id']} already present"
+    assert res.json['Message'] == f"Picture with id {picture['id']} already present"
 
-def test_update_picture_by_id(client, picture):
-    id = '2'
+def test_update_picture_by_id(client):
+    id = 2
     res = client.get(f'/picture/{id}')
     res_picture = res.json
-    assert res_picture['id'] == 2
+    assert res_picture['id'] == id
     res_state = res_picture["event_state"]
     new_state = "*" + res_state
     res_picture["event_state"] = new_state
     res = client.put(f'/picture/{id}', data=json.dumps(res_picture),
                      content_type="application/json")
-    res.status_code == 200
+    assert res.status_code == 200
     res = client.get(f'/picture/{id}')
     assert res.json['event_state'] == new_state
 
@@ -84,6 +98,5 @@ def test_delete_picture_by_id(client):
     assert res.json['length'] == 10
     res = client.delete("/picture/100")
     assert res.status_code == 404
-
 
 
